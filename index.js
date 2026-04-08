@@ -83,7 +83,6 @@ async function painelSuporte() {
         "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
     )
     .setColor("#2b60ff")
-    .setImage("https://cdn-icons-png.flaticon.com/512/1828/1828817.png");
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("select_suporte")
@@ -130,7 +129,6 @@ async function painelCompra() {
         "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
     )
     .setColor("#00b894")
-    .setImage("https://cdn-icons-png.flaticon.com/512/2331/2331941.png");
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
