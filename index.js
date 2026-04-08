@@ -142,7 +142,6 @@ async function painelCompra() {
     new ButtonBuilder()
       .setCustomId("abrir_compra")
       .setLabel("Comprar Painel")
-      .setEmoji("💸")
       .setStyle(ButtonStyle.Primary)
   );
 
