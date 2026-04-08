@@ -1,4 +1,4 @@
-require('dotenv').config();
+require("dotenv").config();
 
 const {
   Client,
@@ -13,195 +13,337 @@ const {
   TextInputBuilder,
   TextInputStyle,
   EmbedBuilder,
-  AttachmentBuilder,
-  Events
-} = require('discord.js');
+  Events,
+} = require("discord.js");
 
 const client = new Client({
-  intents: [GatewayIntentBits.Guilds]
+  intents: [GatewayIntentBits.Guilds],
 });
 
-// CONFIGURAÇÃO
-const CARGO_SUPORTE_NOME = 'Suporte Gzn Engine';
-const CATEGORIA_TICKETS_NOME = '📞・atendimento';
-const CATEGORIA_COMPRAS_NOME = '💻・otimizações';
-
-const CANAL_TICKET_ID = process.env.CANAL_TICKET_ID;
+const CANAL_SUPORTE_ID = process.env.CANAL_SUPORTE_ID;
 const CANAL_COMPRA_ID = process.env.CANAL_COMPRA_ID;
 
-// FUNÇÕES
-const getRole = (g, name) => g.roles.cache.find(r => r.name === name);
-const getCategory = (g, name) =>
-  g.channels.cache.find(c => c.type === ChannelType.GuildCategory && c.name === name);
+const CATEGORIA_TICKETS_NOME = "📞・atendimento";
+const CATEGORIA_COMPRAS_NOME = "💻・otimizações";
 
-const clean = (n) =>
-  n.toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 20);
+function getCategory(guild, name) {
+  return guild.channels.cache.find(
+    (c) => c.type === ChannelType.GuildCategory && c.name === name,
+  );
+}
 
-// PAINEL SUPORTE
+function cleanName(name) {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 20);
+}
+
+function getExistingTicket(guild, userId, tipo) {
+  return guild.channels.cache.find(
+    (c) =>
+      c.type === ChannelType.GuildText &&
+      c.topic &&
+      c.topic.includes(`user:${userId}`) &&
+      c.topic.includes(`tipo:${tipo}`),
+  );
+}
+
+async function apagarPaineisAntigos(canal, marker) {
+  const mensagens = await canal.messages.fetch({ limit: 20 }).catch(() => null);
+  if (!mensagens) return;
+
+  const antigas = mensagens.filter(
+    (m) =>
+      m.author.id === client.user.id &&
+      m.embeds.length > 0 &&
+      m.embeds[0].footer &&
+      m.embeds[0].footer.text === marker,
+  );
+
+  for (const [, msg] of antigas) {
+    await msg.delete().catch(() => {});
+  }
+}
+
 async function painelSuporte() {
-  const canal = await client.channels.fetch(CANAL_TICKET_ID);
+  const canal = await client.channels.fetch(CANAL_SUPORTE_ID).catch(() => null);
   if (!canal) return;
 
-  const img = new AttachmentBuilder('./suporte.png');
+  await apagarPaineisAntigos(canal, "PAINEL_SUPORTE_GZN");
 
   const embed = new EmbedBuilder()
-    .setTitle('Suporte Gzn Engine')
-    .setDescription('Selecione abaixo para abrir atendimento.')
-    .setColor('#2b60ff')
-    .setImage('attachment://suporte.png')
+    .setTitle("Seja Muito Bem-vindo(a) ao Suporte da Gzn Engine")
+    .setDescription(
+      ">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+        "Como funciona? Clique na opção abaixo para abrir um ticket privado com nossa equipe.\n\n" +
+        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
+        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
+    )
+    .setColor("#2b60ff")
+    .setImage("https://cdn-icons-png.flaticon.com/512/1828/1828817.png");
 
   const menu = new StringSelectMenuBuilder()
-    .setCustomId('select_suporte')
-    .setPlaceholder('Escolha o atendimento...')
+    .setCustomId("select_suporte")
+    .setPlaceholder("Selecione o motivo do contato...")
     .addOptions([
-      { label: 'Suporte Técnico', value: 'suporte', emoji: '🔧' },
-      { label: 'Dúvidas', value: 'duvida', emoji: '❓' },
-      { label: 'Parceria', value: 'parceria', emoji: '🤝' }
+      {
+        label: "Suporte Técnico",
+        description: "Problemas Técnicos / Erros / Bug",
+        value: "suporte",
+        emoji: "🛠️",
+      },
+      {
+        label: "Dúvidas",
+        description: "Tirar Dúvidas sobre Produtos",
+        value: "duvida",
+        emoji: "❓",
+      },
+      {
+        label: "Parceria",
+        description: "Parcerias e Propostas",
+        value: "parceria",
+        emoji: "🤝",
+      },
     ]);
 
   await canal.send({
     embeds: [embed],
     components: [new ActionRowBuilder().addComponents(menu)],
-    files: [img]
   });
 }
 
-// PAINEL COMPRA
 async function painelCompra() {
-  const canal = await client.channels.fetch(CANAL_COMPRA_ID);
+  const canal = await client.channels.fetch(CANAL_COMPRA_ID).catch(() => null);
   if (!canal) return;
 
-  const img = new AttachmentBuilder('./compra.png');
+  await apagarPaineisAntigos(canal, "PAINEL_COMPRA_GZN");
 
   const embed = new EmbedBuilder()
-    .setTitle('Comprar Gzn Engine')
-    .setDescription('Clique abaixo para comprar.')
-    .setColor('#00b894')
-    .setImage('attachment://compra.png')
+    .setTitle("Comprar Painel / Otimização Gzn Engine")
+    .setDescription(
+      ">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+        "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
+        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
+        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
+    )
+    .setColor("#00b894")
+    .setImage("https://cdn-icons-png.flaticon.com/512/2331/2331941.png");
 
-  const btn = new ButtonBuilder()
-    .setCustomId('comprar')
-    .setLabel('Comprar')
-    .setEmoji('💸')
-    .setStyle(ButtonStyle.Success);
+  const row = new ActionRowBuilder().addComponents(
+    new ButtonBuilder()
+      .setCustomId("abrir_compra")
+      .setLabel("Comprar Painel")
+      .setEmoji("💸")
+      .setStyle(ButtonStyle.Success),
+  );
 
   await canal.send({
     embeds: [embed],
-    components: [new ActionRowBuilder().addComponents(btn)],
-    files: [img]
+    components: [row],
   });
 }
 
-// CRIAR TICKET
-async function criarTicket(interaction, tipo, texto) {
-  const g = interaction.guild;
+async function criarTicket(interaction, tipo, texto, titulo) {
+  const guild = interaction.guild;
   const user = interaction.user;
 
-  const categoria = getCategory(
-    g,
-    tipo === 'compra' ? CATEGORIA_COMPRAS_NOME : CATEGORIA_TICKETS_NOME
-  );
+  const categoria =
+    tipo === "compra"
+      ? getCategory(guild, CATEGORIA_COMPRAS_NOME)
+      : getCategory(guild, CATEGORIA_TICKETS_NOME);
 
-  const existente = g.channels.cache.find(c => c.topic?.includes(user.id));
+  const existente = getExistingTicket(guild, user.id, tipo);
   if (existente) {
-    return interaction.reply({ content: 'Você já tem ticket aberto.', ephemeral: true });
+    await interaction.reply({
+      content: `Você já tem um ticket aberto: ${existente}`,
+      ephemeral: true,
+    });
+    return;
   }
 
-  const canal = await g.channels.create({
-    name: `${tipo}-${clean(user.username)}`,
+  const nomeCanal = `${tipo}-${cleanName(user.username) || user.id.slice(-4)}`;
+
+  const canal = await guild.channels.create({
+    name: nomeCanal,
     type: ChannelType.GuildText,
-    parent: categoria?.id,
-    topic: user.id,
+    parent: categoria ? categoria.id : null,
+    topic: `user:${user.id} | tipo:${tipo}`,
     permissionOverwrites: [
-      { id: g.id, deny: [PermissionsBitField.Flags.ViewChannel] },
-      { id: user.id, allow: [PermissionsBitField.Flags.ViewChannel] }
-    ]
+      {
+        id: guild.id,
+        deny: [PermissionsBitField.Flags.ViewChannel],
+      },
+      {
+        id: user.id,
+        allow: [
+          PermissionsBitField.Flags.ViewChannel,
+          PermissionsBitField.Flags.SendMessages,
+          PermissionsBitField.Flags.ReadMessageHistory,
+          PermissionsBitField.Flags.AttachFiles,
+        ],
+      },
+      {
+        id: client.user.id,
+        allow: [
+          PermissionsBitField.Flags.ViewChannel,
+          PermissionsBitField.Flags.SendMessages,
+          PermissionsBitField.Flags.ReadMessageHistory,
+          PermissionsBitField.Flags.ManageChannels,
+          PermissionsBitField.Flags.AttachFiles,
+        ],
+      },
+    ],
   });
 
   const embed = new EmbedBuilder()
-    .setTitle('Ticket Aberto')
-    .setDescription(`Motivo: ${texto}`)
-    .setThumbnail(user.displayAvatarURL())
-    .setColor('#5865f2');
+    .setTitle(`🎫 ${titulo}`)
+    .setDescription(
+      `Olá ${user}, seu ticket foi criado com sucesso.\n\n` +
+        `**Descrição:**\n${texto}`,
+    )
+    .setColor(tipo === "compra" ? "#00b894" : "#5865f2")
+    .setThumbnail(user.displayAvatarURL({ size: 256 }))
+    .setFooter({
+      text: user.username,
+      iconURL: user.displayAvatarURL({ size: 256 }),
+    });
 
   const botoes = new ActionRowBuilder().addComponents(
-    new ButtonBuilder().setCustomId('notificar').setLabel('Notificar').setStyle(ButtonStyle.Primary),
-    new ButtonBuilder().setCustomId('assumir').setLabel('Assumir').setStyle(ButtonStyle.Secondary),
-    new ButtonBuilder().setCustomId('fechar').setLabel('Fechar').setStyle(ButtonStyle.Danger)
+    new ButtonBuilder()
+      .setCustomId("notificar_ticket")
+      .setLabel("Notificar")
+      .setStyle(ButtonStyle.Primary),
+
+    new ButtonBuilder()
+      .setCustomId("assumir_ticket")
+      .setLabel("Assumir")
+      .setStyle(ButtonStyle.Secondary),
+
+    new ButtonBuilder()
+      .setCustomId("fechar_ticket")
+      .setLabel("Fechar")
+      .setStyle(ButtonStyle.Danger),
   );
 
-  await canal.send({ content: `${user}`, embeds: [embed], components: [botoes] });
+  await canal.send({
+    content: `${user}`,
+    embeds: [embed],
+    components: [botoes],
+  });
 
-  interaction.reply({ content: `Ticket criado: ${canal}`, ephemeral: true });
+  await interaction.reply({
+    content: `Ticket criado: ${canal}`,
+    ephemeral: true,
+  });
 }
 
-// EVENTOS
 client.once(Events.ClientReady, async () => {
-  console.log('BOT ONLINE');
+  console.log(`BOT ONLINE: ${client.user.tag}`);
 
-  await painelSuporte();
-  await painelCompra();
+  await painelSuporte().catch(console.error);
+  await painelCompra().catch(console.error);
 });
 
-client.on(Events.InteractionCreate, async (i) => {
+client.on(Events.InteractionCreate, async (interaction) => {
   try {
-    if (i.isStringSelectMenu()) {
+    if (
+      interaction.isStringSelectMenu() &&
+      interaction.customId === "select_suporte"
+    ) {
+      const motivo = interaction.values[0];
+
       const modal = new ModalBuilder()
-        .setCustomId('modal')
-        .setTitle('Abrir Ticket');
+        .setCustomId(`modal_${motivo}`)
+        .setTitle("Abertura de Ticket");
 
       const input = new TextInputBuilder()
-        .setCustomId('txt')
-        .setLabel('Descreva seu problema')
-        .setStyle(TextInputStyle.Paragraph);
+        .setCustomId("descricao")
+        .setLabel("Descreva seu Problema ou Dúvida")
+        .setStyle(TextInputStyle.Paragraph)
+        .setRequired(true);
 
       modal.addComponents(new ActionRowBuilder().addComponents(input));
-      await i.showModal(modal);
+      await interaction.showModal(modal);
+      return;
     }
 
-    if (i.isButton() && i.customId === 'comprar') {
-      const modal = new ModalBuilder()
-        .setCustomId('modal_compra')
-        .setTitle('Compra');
-
-      const input = new TextInputBuilder()
-        .setCustomId('txt')
-        .setLabel('O que deseja comprar?')
-        .setStyle(TextInputStyle.Paragraph);
-
-      modal.addComponents(new ActionRowBuilder().addComponents(input));
-      await i.showModal(modal);
+    if (interaction.isButton() && interaction.customId === "abrir_compra") {
+      await criarTicket(
+        interaction,
+        "compra",
+        "Cliente abriu ticket de compra.",
+        "Ticket de Compra",
+      );
+      return;
     }
 
-    if (i.isModalSubmit()) {
-      const texto = i.fields.getTextInputValue('txt');
+    if (interaction.isModalSubmit()) {
+      const texto = interaction.fields.getTextInputValue("descricao");
 
-      if (i.customId === 'modal') {
-        criarTicket(i, 'ticket', texto);
+      if (interaction.customId === "modal_suporte") {
+        await criarTicket(
+          interaction,
+          "suporte",
+          texto,
+          "Ticket de Suporte Técnico",
+        );
+        return;
       }
 
-      if (i.customId === 'modal_compra') {
-        criarTicket(i, 'compra', texto);
-      }
-    }
-
-    if (i.isButton()) {
-      if (i.customId === 'fechar') {
-        i.reply({ content: 'Fechando...', ephemeral: true });
-        setTimeout(() => i.channel.delete(), 3000);
+      if (interaction.customId === "modal_duvida") {
+        await criarTicket(interaction, "duvida", texto, "Ticket de Dúvidas");
+        return;
       }
 
-      if (i.customId === 'notificar') {
-        i.channel.send('@here');
-        i.reply({ content: 'Notificado', ephemeral: true });
-      }
-
-      if (i.customId === 'assumir') {
-        i.reply({ content: 'Ticket assumido', ephemeral: true });
+      if (interaction.customId === "modal_parceria") {
+        await criarTicket(interaction, "parceria", texto, "Ticket de Parceria");
+        return;
       }
     }
-  } catch (e) {
-    console.log(e);
+
+    if (interaction.isButton() && interaction.customId === "notificar_ticket") {
+      await interaction.channel.send("@here");
+      await interaction.reply({
+        content: "Equipe notificada.",
+        ephemeral: true,
+      });
+      return;
+    }
+
+    if (interaction.isButton() && interaction.customId === "assumir_ticket") {
+      await interaction.reply({
+        content: `Ticket assumido por ${interaction.user}.`,
+        ephemeral: false,
+      });
+      return;
+    }
+
+    if (interaction.isButton() && interaction.customId === "fechar_ticket") {
+      await interaction.reply({
+        content: "Fechando ticket em 5 segundos...",
+        ephemeral: true,
+      });
+
+      setTimeout(async () => {
+        await interaction.channel.delete().catch(console.error);
+      }, 5000);
+
+      return;
+    }
+  } catch (error) {
+    console.error(error);
+
+    if (!interaction.replied && !interaction.deferred) {
+      await interaction
+        .reply({
+          content: "Ocorreu um erro ao processar essa ação.",
+          ephemeral: true,
+        })
+        .catch(() => {});
+    }
   }
 });
 
