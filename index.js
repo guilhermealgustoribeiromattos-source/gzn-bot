@@ -14,7 +14,7 @@ const {
   TextInputStyle,
   EmbedBuilder,
   Events,
-  AttachmentBuilder
+  AttachmentBuilder,
 } = require("discord.js");
 
 const client = new Client({
@@ -75,17 +75,18 @@ async function painelSuporte() {
 
   await apagarPaineisAntigos(canal, "PAINEL_SUPORTE_GZN");
 
-  const img = new AttachmentBuilder('./suporte.png');
+  const img = new AttachmentBuilder("./suporte.png");
 
   const embed = new EmbedBuilder()
-    .setTitle("Seja Muito Bem-vindo(a) ao Suporte da Gzn Engine")
-    .setDescription(">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
-        "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
-        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
-        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
-")
+    .setTitle("Seja muito bem-vindo(a) ao suporte da Gzn Engine")
+    .setDescription(
+      ">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+      "Como funciona? Clique na opção abaixo para abrir um ticket privado com nossa equipe.\n\n" +
+      "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
+      "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!"
+    )
     .setColor("#2b60ff")
-    .setImage("attachment://suporte.png");
+    .setImage("attachment://suporte.png")
 
   const menu = new StringSelectMenuBuilder()
     .setCustomId("select_suporte")
@@ -93,10 +94,22 @@ async function painelSuporte() {
     .addOptions([
       {
         label: "Suporte Técnico",
-        description: "Problemas Técnicos / Erros / Bug",
+        description: "Problemas Técnicos / Erro / Bug",
         value: "suporte",
         emoji: "🛠️",
-      }
+      },
+      {
+        label: "Dúvidas",
+        description: "Tirar Dúvidas sobre Produtos",
+        value: "duvida",
+        emoji: "❓",
+      },
+      {
+        label: "Parceria",
+        description: "Parcerias e Propostas",
+        value: "parceria",
+        emoji: "🤝",
+      },
     ]);
 
   await canal.send({
@@ -112,24 +125,25 @@ async function painelCompra() {
 
   await apagarPaineisAntigos(canal, "PAINEL_COMPRA_GZN");
 
-  const img = new AttachmentBuilder('./compra.png');
+  const img = new AttachmentBuilder("./compra.png");
 
   const embed = new EmbedBuilder()
     .setTitle("Comprar Painel / Otimização Gzn Engine")
-    .setDescription(">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+    .setDescription(
+      ">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
         "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
         "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
         "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
-")
+    )
     .setColor("#00b894")
-    .setImage("attachment://compra.png");
+    .setImage("attachment://compra.png")
 
   const row = new ActionRowBuilder().addComponents(
     new ButtonBuilder()
       .setCustomId("abrir_compra")
       .setLabel("Comprar Painel")
       .setEmoji("💸")
-      .setStyle(ButtonStyle.Success),
+      .setStyle(ButtonStyle.Success)
   );
 
   await canal.send({
