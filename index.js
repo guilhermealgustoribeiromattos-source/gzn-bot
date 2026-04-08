@@ -135,7 +135,7 @@ async function painelCompra() {
         "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
         "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
     )
-    .setColor("#00b894")
+    .setColor("#2b60ff")
     .setImage("attachment://compra.png")
 
   const row = new ActionRowBuilder().addComponents(
@@ -143,7 +143,7 @@ async function painelCompra() {
       .setCustomId("abrir_compra")
       .setLabel("Comprar Painel")
       .setEmoji("💸")
-      .setStyle(ButtonStyle.Success)
+      .setStyle(ButtonStyle.Primary)
   );
 
   await canal.send({
