@@ -79,7 +79,11 @@ async function painelSuporte() {
 
   const embed = new EmbedBuilder()
     .setTitle("Seja Muito Bem-vindo(a) ao Suporte da Gzn Engine")
-    .setDescription("seu texto aqui...")
+    .setDescription(">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+        "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
+        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
+        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
+")
     .setColor("#2b60ff")
     .setImage("attachment://suporte.png");
 
@@ -112,7 +116,11 @@ async function painelCompra() {
 
   const embed = new EmbedBuilder()
     .setTitle("Comprar Painel / Otimização Gzn Engine")
-    .setDescription("seu texto aqui...")
+    .setDescription(">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
+        "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
+        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
+        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
+")
     .setColor("#00b894")
     .setImage("attachment://compra.png");
 
