@@ -94,7 +94,7 @@ async function painelSuporte() {
     .addOptions([
       {
         label: "Suporte Técnico",
-        description: "Problemas Técnicos / Erro / Bug",
+        description: "Problemas Técnicos/Erro /Bug",
         value: "suporte",
         emoji: "🛠️",
       },
