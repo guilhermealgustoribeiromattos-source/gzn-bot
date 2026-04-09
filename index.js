@@ -27,6 +27,12 @@ const CANAL_COMPRA_ID = process.env.CANAL_COMPRA_ID;
 const CATEGORIA_TICKETS_NOME = "📞・atendimento";
 const CATEGORIA_COMPRAS_NOME = "💻・otimizações";
 
+const CARGO_SUPORTE_ID = "1491200132350214304";
+
+function isStaff(member) {
+  return member.roles.cache.has(CARGO_SUPORTE_ID);
+}
+
 function getCategory(guild, name) {
   return guild.channels.cache.find(
     (c) => c.type === ChannelType.GuildCategory && c.name === name,
@@ -130,11 +136,23 @@ async function painelCompra() {
   const embed = new EmbedBuilder()
     .setTitle("Comprar Painel / Otimização Gzn Engine")
     .setDescription(
-      ">>> Estamos aqui para garantir que você tenha a melhor experiência possível. Se você precisa de ajuda com uma compra, tem dúvidas sobre um produto ou necessita de assistência técnica, você está no lugar certo.\n\n" +
-        "Como funciona? Clique no botão/reação abaixo para abrir um ticket privado com nossa equipe.\n\n" +
-        "Por favor, seja paciente após abrir o ticket. Nossa equipe responderá o mais breve possível.\n\n" +
-        "Transcreva o mais detalhado possível o seu tipo de problema/ajuda na descrição!",
-    )
+"🚀 **SEU PC NÃO É RUIM… ELE SÓ NÃO ESTÁ OTIMIZADO**\n\n" +
+
+"Você pode estar perdendo FPS, tendo input lag e nem percebe…\n" +
+"porque o Windows vem cheio de limitações escondidas.\n\n" +
+
+"🔥 **Com o GZN ENGINE você libera o desempenho REAL do seu PC em 1 clique:**\n" +
+"✔ Mais FPS\n" +
+"✔ Menos travamentos\n" +
+"✔ Menos input lag\n" +
+"✔ Sistema mais leve\n\n" +
+
+"💀 Enquanto você sofre com lag, tem gente jogando liso usando isso\n\n" +
+
+"⚡ **Não é sobre ter PC forte, é sobre saber otimizar**\n\n" +
+
+"👉 Clique abaixo e sinta a diferença agora"
+)
     .setColor("#2b60ff")
     .setImage("attachment://compra.png")
 
@@ -311,21 +329,37 @@ client.on(Events.InteractionCreate, async (interaction) => {
     }
 
     if (interaction.isButton() && interaction.customId === "notificar_ticket") {
-      await interaction.channel.send("@here");
-      await interaction.reply({
-        content: "Equipe notificada.",
-        ephemeral: true,
-      });
-      return;
-    }
+  if (!isStaff(interaction.member)) {
+    await interaction.reply({
+      content: "❌ Apenas a equipe de suporte pode usar este botão.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  await interaction.channel.send("@here");
+  await interaction.reply({
+    content: "Equipe notificada.",
+    ephemeral: true,
+  });
+  return;
+}
 
     if (interaction.isButton() && interaction.customId === "assumir_ticket") {
-      await interaction.reply({
-        content: `Ticket assumido por ${interaction.user}.`,
-        ephemeral: false,
-      });
-      return;
-    }
+  if (!isStaff(interaction.member)) {
+    await interaction.reply({
+      content: "❌ Apenas a equipe de suporte pode assumir este ticket.",
+      ephemeral: true,
+    });
+    return;
+  }
+
+  await interaction.reply({
+    content: `✅ Ticket assumido por ${interaction.user}.`,
+    ephemeral: false,
+  });
+  return;
+}
 
     if (interaction.isButton() && interaction.customId === "fechar_ticket") {
       await interaction.reply({
